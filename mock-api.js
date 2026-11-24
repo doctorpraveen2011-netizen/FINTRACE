@@ -2756,5 +2756,116 @@ TXN-006,HOP_4,2026-11-24 18:48:12,AC38192,Punjab National Bank,ATM-KIOSK-09,ATM 
     return originalFetch.apply(this, arguments);
   };
 
+  // Intercept window.open for client-side PDF/CSV downloads on static hosting
+  const originalOpen = typeof window !== 'undefined' ? window.open : null;
+  if (originalOpen) {
+    window.open = function(url, target, features) {
+      if (typeof url === 'string') {
+        if (url.includes('/api/reports/') && url.endsWith('/pdf')) {
+          const repMatch = url.match(/\/api\/reports\/([^/?]+)\/pdf/);
+          const repId = repMatch ? repMatch[1] : 'REP-2026-089A';
+          const docWin = originalOpen.call(window, '', target || '_blank', features);
+          if (docWin) {
+            docWin.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Court-Certified Forensic Investigation Dossier - ${repId}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 40px; color: #0f172a; line-height: 1.5; background: #fff; }
+    .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 18px; }
+    .title { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; }
+    .sub { font-size: 11px; color: #475569; font-weight: 600; margin-top: 4px; }
+    .stamp { background: #0f172a; color: white; padding: 5px 12px; font-size: 9.5px; font-weight: 800; text-align: center; margin: 12px 0; border-radius: 4px; letter-spacing: 0.5px; }
+    .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 15px; margin-bottom: 18px; font-size: 11px; }
+    .box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10.5px; }
+    th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
+    th { background: #0f172a; color: white; font-weight: 700; }
+    tr:nth-child(even) { background: #f8fafc; }
+    .barcode { font-family: monospace; font-size: 13px; font-weight: bold; letter-spacing: 3px; text-align: center; padding: 8px; background: white; border: 1px dashed #94a3b8; margin: 6px 0; }
+    .print-btn { background: #1d4ed8; color: white; border: none; padding: 8px 16px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .print-btn:hover { background: #1e40af; }
+    @media print { .print-btn { display: none; } }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">🖨️ Print / Save Court PDF</button>
+  <div class="header">
+    <div class="title">GOVERNMENT OF INDIA • FINANCIAL INTELLIGENCE UNIT (FIU-IND)</div>
+    <div class="sub">SPECIAL CYBER-FINANCIAL INVESTIGATION DOSSIER — SECTION 65B CERTIFIED</div>
+  </div>
+  <div class="stamp">CONFIDENTIAL // JUDICIAL SUBMISSION // EVIDENCE ACT SECTION 65B CERTIFIED</div>
+  <div class="grid">
+    <div class="box">
+      <div><strong>Dossier ID:</strong> <span style="font-family:monospace;color:#1d4ed8;font-weight:bold;">${repId}</span></div>
+      <div><strong>Case Docket:</strong> <span style="font-family:monospace;">CASE-2026-089</span></div>
+      <div><strong>Target Account:</strong> <span style="font-family:monospace;font-weight:bold;">acc_00083575</span> (Axis Bank)</div>
+      <div><strong>Suspect Entity:</strong> Farhan Zaidi (Linked to Jamtara Syndicate)</div>
+      <div><strong>Confirmed Exposure:</strong> <span style="color:#b91c1c;font-weight:bold;">₹14,80,000</span></div>
+      <div><strong>Compilation Date:</strong> ${new Date().toLocaleString()}</div>
+      <div><strong>Signatory:</strong> Inspector Rajesh Kumar (Lead Forensic Examiner)</div>
+    </div>
+    <div class="box" style="text-align:center;">
+      <div style="font-size:9.5px;font-weight:bold;color:#475569;margin-bottom:4px;">FORENSIC SCANNABLE BARCODE</div>
+      <div class="barcode">||| | | || ||| | || |||| | ||| |</div>
+      <div style="font-family:monospace;font-size:9.5px;color:#64748b;">*FINTRACE://${repId}*</div>
+      <div style="font-size:10px;color:#15803d;font-weight:bold;margin-top:6px;">✓ CRYPTOGRAPHIC SEAL VALID (SEC 65B)</div>
+    </div>
+  </div>
+  <h4 style="font-size:11px;font-weight:bold;margin:12px 0 4px;color:#1d4ed8;">1. FORENSIC MONEY TRAIL & RAPID DISPERSAL LEDGER (UTR LOGS)</h4>
+  <table>
+    <thead>
+      <tr><th>Hop</th><th>Timestamp</th><th>Sender Entity</th><th>Receiver Entity</th><th>Channel / UTR</th><th>Amount (INR)</th><th>Typology Flag</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>HOP 1</td><td>18:45:12</td><td>Victim Account (Varun)</td><td>acc_00083575 (Axis Bank)</td><td>IMPS: 9812401824</td><td>₹14,80,000</td><td style="color:#b91c1c;font-weight:bold;">Primary Inflow</td></tr>
+      <tr><td>HOP 2</td><td>18:46:00</td><td>acc_00083575 (Axis Bank)</td><td>AC91823 (HDFC Bank)</td><td>RTGS: 9812401825</td><td>₹6,00,000</td><td style="color:#ea580c;">Layer-1 Split</td></tr>
+      <tr><td>HOP 3</td><td>18:46:30</td><td>acc_00083575 (Axis Bank)</td><td>AC55412 (ICICI Bank)</td><td>NEFT: 9812401826</td><td>₹6,50,000</td><td style="color:#ea580c;">Layer-1 Split</td></tr>
+      <tr><td>HOP 4</td><td>18:47:10</td><td>AC91823 (HDFC Bank)</td><td>AC44510 (State Bank of India)</td><td>IMPS: 9812401827</td><td>₹5,80,000</td><td>Mule Smurfing</td></tr>
+      <tr><td>HOP 5</td><td>18:48:00</td><td>AC55412 (ICICI Bank)</td><td>AC38192 (Punjab National Bank)</td><td>UPI: 9812401828</td><td>₹3,20,000</td><td>Pass-Through</td></tr>
+      <tr><td>HOP 6</td><td>18:48:12</td><td>AC38192 (Punjab National Bank)</td><td>ATM Kiosk #09 (Anna Salai)</td><td>ATM-CASH-TXN-01</td><td>₹1,50,000</td><td style="color:#b91c1c;font-weight:bold;">Physical Cash-Out</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:16px;padding:12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;font-size:10px;line-height:1.4;">
+    <strong>STATUTORY CERTIFICATE UNDER SECTION 65B(4) INDIAN EVIDENCE ACT / SECTION 63 BSA:</strong><br/>
+    I hereby certify that the electronic forensic records, transaction ledgers, tower triangulation logs, and machine learning risk inferences contained in this dossier were produced by the FINTRACE Cyber-Financial Intelligence Platform during lawful forensic investigation. The computing devices were operating properly with zero tampering.
+    <div style="margin-top:8px;display:flex;justify-content:space-between;border-top:1px solid #e2e8f0;padding-top:6px;">
+      <span><strong>SHA-256 Digest:</strong> 9f8a3c8e4d2a1b5c7e9f0a2b4d6e8f1a3c5e7b9d0f2a4c6e8b0d2f4a6c8e0b2</span>
+      <span><strong>Signatory:</strong> Inspector Rajesh Kumar (Cyber Crime Division)</span>
+    </div>
+  </div>
+</body>
+</html>`);
+            docWin.document.close();
+            return docWin;
+          }
+        }
+        if (url.includes('/api/reports/') && url.endsWith('/csv')) {
+          const repMatch = url.match(/\/api\/reports\/([^/?]+)\/csv/);
+          const repId = repMatch ? repMatch[1] : 'REP-2026-089A';
+          const csvText = `Record_ID,Hop_Level,Timestamp,Source_Account,Source_Bank,Destination_Account,Destination_Bank,Amount_INR,Payment_Channel,UTR_Number,Typology_Risk_Flag,Status,Cryptographic_Hash
+TXN-001,HOP_1,2026-11-24 18:45:12,ACC-VICTIM-VARUN,HDFC Bank,acc_00083575,Axis Bank,1480000.00,IMPS,UTR9812401824,PRIMARY_PHISHING_INFLOW,CONFIRMED_FRAUD,9f8a3c8e4d2a1b5c7e9f0a2b4d6e8f1a
+TXN-002,HOP_2,2026-11-24 18:46:00,acc_00083575,Axis Bank,AC91823,HDFC Bank,600000.00,RTGS,UTR9812401825,LAYER_1_RAPID_SPLIT,CONDUIT_MULE,a1b2c3d4e5f60718293a4b5c6d7e8f9a
+TXN-003,HOP_2,2026-11-24 18:46:30,acc_00083575,Axis Bank,AC55412,ICICI Bank,650000.00,NEFT,UTR9812401826,LAYER_1_RAPID_SPLIT,CONDUIT_MULE,b2c3d4e5f60718293a4b5c6d7e8f9a0b
+TXN-004,HOP_3,2026-11-24 18:47:10,AC91823,HDFC Bank,AC44510,State Bank of India,580000.00,IMPS,UTR9812401827,LAYER_2_SMURFING,PASS_THROUGH_MULE,c3d4e5f60718293a4b5c6d7e8f9a0b1c
+TXN-005,HOP_3,2026-11-24 18:48:00,AC55412,ICICI Bank,AC38192,Punjab National Bank,320000.00,UPI,UTR9812401828,LAYER_2_PASS_THROUGH,PASS_THROUGH_MULE,d4e5f60718293a4b5c6d7e8f9a0b1c2d
+TXN-006,HOP_4,2026-11-24 18:48:12,AC38192,Punjab National Bank,ATM-KIOSK-09,ATM Anna Salai Chennai,150000.00,ATM_WITHDRAWAL,ATM-CASH-TXN-01,CRITICAL_CASHOUT,CASH_DRAINED,e5f60718293a4b5c6d7e8f9a0b1c2d3e`;
+          const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = `Forensic_Dossier_${repId}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+          return null;
+        }
+      }
+      return originalOpen.apply(this, arguments);
+    };
+  }
+
   console.log('[FINTRACE] Master Forensic Intelligence Engine successfully hooked into window.fetch.');
 })();
